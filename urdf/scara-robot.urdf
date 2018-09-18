@@ -1,0 +1,139 @@
+<?xml version="1.0"?>
+<robot name="scara">
+
+  <link name="base_link">
+    <visual>
+      <geometry>
+        <cylinder length="1.2" radius="0.15"/>
+      </geometry>
+      <origin rpy="0 0 0" xyz="0 0 0.6"/>
+      <material name="White">
+        <color rgba="255.0 255.0 255.0 1.0"/>
+      </material>  
+    </visual>
+  </link>
+
+
+  <link name="first_link">
+    <visual>
+      <geometry>
+        <box size="0.9 0.15 0.3"/>
+      </geometry>
+      <origin rpy="0 0 0" xyz="0.45 0 0"/>
+      <material name="White">
+        <color rgba="255.0 255.0 255.0 1.0"/>
+      </material>
+ 
+    </visual>
+  </link>
+
+  <link name="first_joint">
+    <visual>
+      <geometry>
+        <cylinder length="0.3" radius="0.15"/>
+      </geometry>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <material name="Black">
+        <color rgba="0.0 0.0 0.0 1.0"/>
+      </material> 
+    </visual>
+  </link>
+
+
+  <link name="second_link">
+    <visual>
+      <geometry>
+        <box size="0.9 0.15 0.3"/>
+      </geometry>
+      <origin rpy="0 0 0" xyz="0.45 0 0"/>
+      <material name="White">
+        <color rgba="255.0 255.0 255.0 1.0"/>
+      </material>
+    </visual>
+  </link>
+
+  <link name="second_joint">
+    <visual>
+      <geometry>
+        <cylinder length="0.3" radius="0.15"/>
+      </geometry>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <material name="Black">
+        <color rgba="0.0 0.0 0.0 1.0"/>
+      </material> 
+    </visual>
+  </link>
+
+  <link name="third_link">
+    <visual>
+      <geometry>
+        <cylinder length="0.6" radius="0.05"/>
+      </geometry>
+      <origin rpy="0 0 0" xyz="0 0 -0.15"/>
+      <material name="White">
+        <color rgba="255.0 255.0 255.0 1.0"/>
+      </material>
+    </visual>
+  </link>
+
+  <link name="wrist_link">
+    <visual>
+      <geometry>
+        <box size="0.01 0.05 0.1"/>
+      </geometry>
+      <origin rpy="0 0 0" xyz="0.05 0 0.05"/>
+      <material name="Red">
+        <color rgba="255.0 0.0 0.0 1.0"/>
+      </material>
+    </visual>
+  </link>
+
+
+
+  <joint name="base_to_first_link" type="revolute">
+    <axis xyz="0 0 1"/>
+    <limit effort="1000.0" lower="-2.6" upper="2.6" velocity="0.5"/>
+    <parent link="base_link"/>
+      <child link="first_link"/>
+    <origin rpy="0 0 0" xyz="0 0 0.75"/>
+  </joint>
+
+  <joint name="first_link_to_first_joint" type="revolute">
+    <axis xyz="0 0 1"/>
+    <limit effort="1000.0" lower="-2.6" upper="2.6" velocity="0.5"/>
+    <parent link="first_link"/>
+      <child link="first_joint"/>
+    <origin rpy="0 0 0" xyz="0.9 0 0"/>
+  </joint>
+
+
+  <joint name="first_joint_to_second_link" type="fixed">
+    <parent link="first_joint"/>
+      <child link="second_link"/>
+    <origin xyz="0 0 0"/>
+  </joint>
+
+  <joint name="second_link_to_second_joint" type="continuous">
+    <axis xyz="0 0 1"/>
+    <parent link="second_link"/>
+      <child link="second_joint"/>
+    <origin rpy="0 0 0" xyz="0.9 0 0"/>
+  </joint>
+
+
+  <joint name="second_joint_to_third_joint" type="prismatic">
+    <axis xyz="0 0 1"/>
+    <limit effort="1000.0" lower="-0.3" upper="0" velocity="0.5"/>
+    <parent link="second_joint"/>
+      <child link="third_link"/>
+    <origin rpy="0 0 0" xyz="0 0 0"/>
+  </joint>
+
+  <joint name="third_link_to_wrist_link" type="fixed">
+    <parent link="third_link"/>
+      <child link="wrist_link"/>
+    <origin xyz="0 0 -0.45"/>
+  </joint>
+
+
+</robot>
