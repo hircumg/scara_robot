@@ -90,6 +90,10 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
+        world:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
         wrist_link:
           Alpha: 1
           Show Axes: false
@@ -106,34 +110,13 @@ Visualization Manager:
       Frame Timeout: 15
       Frames:
         All Enabled: true
-        base_link:
-          Value: true
-        first_joint:
-          Value: true
-        first_link:
-          Value: true
-        second_joint:
-          Value: true
-        second_link:
-          Value: true
-        third_link:
-          Value: true
-        wrist_link:
-          Value: true
       Marker Scale: 0.5
       Name: TF
       Show Arrows: true
       Show Axes: true
       Show Names: true
       Tree:
-        base_link:
-          first_link:
-            first_joint:
-              second_link:
-                second_joint:
-                  third_link:
-                    wrist_link:
-                      {}
+        {}
       Update Interval: 0
       Value: true
   Enabled: true
