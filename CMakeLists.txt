@@ -6,6 +6,9 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
   std_msgs
+  controller_manager
+  joint_state_controller
+  robot_state_publisher
 )
 
 ## System dependencies are found with CMake's conventions
@@ -183,13 +186,7 @@ include_directories(
 #############
 ## Testing ##
 #############
-if(CATKIN_ENABLE_TESTING)
-  find_package(roslaunch REQUIRED)
-  roslaunch_add_file_check(launch)
-endif()
 
-install(DIRECTORY images meshes launch rviz urdf
-  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
 
 
 ## Add gtest based cpp test target and link libraries

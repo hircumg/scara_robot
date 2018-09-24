@@ -1,20 +1,20 @@
 <?xml version="1.0"?>
-<robot name="scara">
+<robot name="SCARA">
 
-  <link name="world"/>
 
+  <!-- connect to world -->
+  <link name="world" />
   <joint name="fixed" type="fixed">
     <parent link="world"/>
     <child link="base_link"/>
-    <origin xyz="0 0 0"/> 
   </joint>
 
   <link name="base_link">
     <visual>
       <geometry>
-        <cylinder length="1.2" radius="0.15"/>
+        <cylinder length="0.5" radius="0.1"/>
       </geometry>
-      <origin rpy="0 0 0" xyz="0 0 0.6"/>
+      <origin rpy="0 0 0" xyz="0 0 0.25"/>
       <material name="White">
         <color rgba="255.0 255.0 255.0 1.0"/>
       </material>  
@@ -22,13 +22,15 @@
 
     <collision>
       <geometry>
-        <cylinder length="1.2" radius="0.15"/>
+        <cylinder length="0.5" radius="0.1"/>
       </geometry>
+      <origin rpy="0 0 0" xyz="0 0 0.25" />
     </collision>
     
     <inertial>
-      <mass value="10"/>
-      <inertia ixx="1.275" ixy="0.0" ixz="0.0" iyy="1.275" iyz="0.0" izz="0.15"/>
+      <mass value="1"/>
+      <origin rpy="0 0 0" xyz="0 0 0.25"/>
+      <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0"/>
     </inertial>
   </link>
 
@@ -36,9 +38,9 @@
   <link name="first_link">
     <visual>
       <geometry>
-        <box size="0.9 0.15 0.3"/>
+        <box size="0.9 0.15 0.1"/>
       </geometry>
-      <origin rpy="0 0 0" xyz="0.45 0 0"/>
+      <origin rpy="0 0 0" xyz="0.45 0 0.05"/>
       <material name="White">
         <color rgba="255.0 255.0 255.0 1.0"/>
       </material>
@@ -46,46 +48,28 @@
 
     <collision>
       <geometry>
-        <box size="0.9 0.15 0.3"/>
+        <box size="0.9 0.15 0.1"/>
       </geometry>
+      <origin rpy="0 0 0" xyz="0.45 0 0.05"/>
     </collision>
     
     <inertial>
-      <mass value="0"/>
-      <inertia ixx="0.0" ixy="0.0" ixz="0.0" iyy="0.0" iyz="0.0" izz="0.0"/>
+      <mass value="1"/>
+      <origin rpy="0 0 0" xyz="0.45 0 0.05"/>
+      <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0"/>
     </inertial>
   </link>
 
-  <link name="first_joint">
-    <visual>
-      <geometry>
-        <cylinder length="0.3" radius="0.15"/>
-      </geometry>
-      <origin rpy="0 0 0" xyz="0 0 0"/>
-      <material name="Black">
-        <color rgba="0.0 0.0 0.0 1.0"/>
-      </material> 
-    </visual>
 
-    <collision>
-      <geometry>
-        <cylinder length="0.3" radius="0.15"/>
-      </geometry>
-    </collision>
-    
-    <inertial>
-      <mass value="0"/>
-      <inertia ixx="0.0" ixy="0.0" ixz="0.0" iyy="0.0" iyz="0.0" izz="0.0"/>
-    </inertial>
-  </link>
+ 
 
 
   <link name="second_link">
     <visual>
       <geometry>
-        <box size="0.9 0.15 0.3"/>
+        <box size="0.9 0.15 0.1"/>
       </geometry>
-      <origin rpy="0 0 0" xyz="0.45 0 0"/>
+      <origin rpy="0 0 0" xyz="0.45 0 0.05"/>
       <material name="White">
         <color rgba="255.0 255.0 255.0 1.0"/>
       </material>
@@ -93,45 +77,26 @@
 
     <collision>
       <geometry>
-        <box size="0.9 0.15 0.3"/>
+        <box size="0.9 0.15 0.1"/>
       </geometry>
+      <origin rpy="0 0 0" xyz="0.45 0 0.05"/>
     </collision>
     
     <inertial>
-      <mass value="0"/>
-      <inertia ixx="0.0" ixy="0.0" ixz="0.0" iyy="0.0" iyz="0.0" izz="0.0"/>
+      <mass value="1"/>
+      <origin rpy="0 0 0" xyz="0.45 0 0.05"/>
+      <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0"/>
     </inertial>
   </link>
 
-  <link name="second_joint">
-    <visual>
-      <geometry>
-        <cylinder length="0.3" radius="0.15"/>
-      </geometry>
-      <origin rpy="0 0 0" xyz="0 0 0"/>
-      <material name="Black">
-        <color rgba="0.0 0.0 0.0 1.0"/>
-      </material> 
-    </visual>
-
-    <collision>
-      <geometry>
-        <cylinder length="0.3" radius="0.15"/>
-      </geometry>
-    </collision>
-    
-    <inertial>
-      <mass value="0"/>
-      <inertia ixx="0.0" ixy="0.0" ixz="0.0" iyy="0.0" iyz="0.0" izz="0.0"/>
-    </inertial>
-  </link>
+  
 
   <link name="third_link">
     <visual>
       <geometry>
         <cylinder length="0.6" radius="0.05"/>
       </geometry>
-      <origin rpy="0 0 0" xyz="0 0 -0.15"/>
+      <origin rpy="0 0 0" xyz="0.0 0 0"/>
       <material name="White">
         <color rgba="255.0 255.0 255.0 1.0"/>
       </material>
@@ -141,83 +106,208 @@
       <geometry>
         <cylinder length="0.6" radius="0.05"/>
       </geometry>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
     </collision>
     
     <inertial>
-      <mass value="0"/>
-      <inertia ixx="0.0" ixy="0.0" ixz="0.0" iyy="0.0" iyz="0.0" izz="0.0"/>
-    </inertial>
-  </link>
-
-  <link name="wrist_link">
-    <visual>
-      <geometry>
-        <box size="0.01 0.05 0.1"/>
-      </geometry>
-      <origin rpy="0 0 0" xyz="0.05 0 0.05"/>
-      <material name="Red">
-        <color rgba="255.0 0.0 0.0 1.0"/>
-      </material>
-    </visual>
-
-    <collision>
-      <geometry>
-        <box size="0.01 0.05 0.1"/>
-      </geometry>
-    </collision>
-    
-    <inertial>
-      <mass value="0"/>
-      <inertia ixx="0.0" ixy="0.0" ixz="0.0" iyy="0.0" iyz="0.0" izz="0.0"/>
+      <mass value="1"/>
+      <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0"/>
     </inertial>
   </link>
 
 
 
-  <joint name="base_to_first_link" type="revolute">
+  <!-- set links -->e
+
+  <joint name="base_to_first_joint" type="revolute"> 
     <axis xyz="0 0 1"/>
     <limit effort="1000.0" lower="-2.6" upper="2.6" velocity="0.5"/>
     <parent link="base_link"/>
       <child link="first_link"/>
-    <origin rpy="0 0 0" xyz="0 0 0.75"/>
+    <origin rpy="0 0 0" xyz="0 0 0.5"/>
+    <dynamics damping="0.7" />
   </joint>
 
-  <joint name="first_link_to_first_joint" type="revolute">
+
+  <joint name="first_to_second_joint" type="revolute"> 
     <axis xyz="0 0 1"/>
     <limit effort="1000.0" lower="-2.6" upper="2.6" velocity="0.5"/>
     <parent link="first_link"/>
-      <child link="first_joint"/>
-    <origin rpy="0 0 0" xyz="0.9 0 0"/>
-  </joint>
-
-
-  <joint name="first_joint_to_second_link" type="fixed">
-    <parent link="first_joint"/>
       <child link="second_link"/>
-    <origin xyz="0 0 0"/>
+    <origin rpy="0 0 0" xyz="0.9 0 0.1"/>
+    <dynamics damping="0.7" />
   </joint>
 
-  <joint name="second_link_to_second_joint" type="continuous">
+
+  <joint name="second_to_third_joint" type="prismatic"> 
     <axis xyz="0 0 1"/>
+    <limit effort="1000.0" lower="-0.30" upper="0.30" velocity="0.5"/>
     <parent link="second_link"/>
-      <child link="second_joint"/>
-    <origin rpy="0 0 0" xyz="0.9 0 0"/>
-  </joint>
-
-
-  <joint name="second_joint_to_third_joint" type="prismatic">
-    <axis xyz="0 0 1"/>
-    <limit effort="1000.0" lower="-0.3" upper="0" velocity="0.5"/>
-    <parent link="second_joint"/>
       <child link="third_link"/>
-    <origin rpy="0 0 0" xyz="0 0 0"/>
+    <origin rpy="0 0 0" xyz="0.9 0 0"/>
+    <dynamics damping="0.7" />
   </joint>
 
-  <joint name="third_link_to_wrist_link" type="fixed">
-    <parent link="third_link"/>
-      <child link="wrist_link"/>
-    <origin xyz="0 0 -0.45"/>
+
+
+  <!-- set covers -->
+  <link name="cover1_left">
+    <visual>
+      <geometry>
+        <cylinder length="0.1" radius="0.1" />
+      </geometry>
+      <origin rpy="0 0 0" xyz="0.0 0 0.05"/>
+      <material name="blue" />
+    </visual>
+  </link>
+
+  <joint name="left_cover_link1" type="fixed">
+    <parent link="first_link" />
+    <child link="cover1_left" />
   </joint>
+
+  <link name="cover1_right">
+    <visual>
+      <geometry>
+        <cylinder length="0.1" radius="0.1" />
+      </geometry>
+      <material name="blue" />
+     <origin rpy="0 0 0" xyz="0.9 0 0.05"/>
+    </visual>
+  </link>
+
+  <joint name="right_cover_link1" type="fixed">
+    <parent link="first_link" />
+    <child link="cover1_right" />
+  </joint>
+
+  <!-- covers for link2 -->
+  <link name="cover2_left">
+    <visual>
+      <geometry>
+        <cylinder length="0.1" radius="0.1" />
+      </geometry>
+      <origin rpy="0 0 0" xyz="0.0 0 0.05"/>
+      <material name="white" />
+    </visual>
+  </link>
+
+  <joint name="left_cover_link2" type="fixed">
+    <parent link="second_link" />
+    <child link="cover2_left" />
+  </joint>
+
+  <link name="cover2_right">
+    <visual>
+      <geometry>
+        <cylinder length="0.1" radius="0.1" />
+      </geometry>
+      <material name="white" />
+      <origin rpy="0 0 0" xyz="0.9 0 0.05"/>
+    </visual>
+  </link>
+
+  <joint name="right_cover_link2" type="fixed">
+    <parent link="second_link" />
+    <child link="cover2_right" />
+  </joint>
+
+  <!-- set transmissions -->
+
+  <transmission name="tran1">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="base_to_first_joint">
+      <hardwareInterface>EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="motor1">
+      <hardwareInterface>EffortJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+
+  <transmission name="tran2">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="first_to_second_joint">
+      <hardwareInterface>EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="motor2">
+      <hardwareInterface>EffortJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+
+  <transmission name="tran3">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="second_to_third_joint">
+      <hardwareInterface>EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="motor3">
+      <hardwareInterface>EffortJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+
+
+  <!-- link properties in Gazebo -->
+  <gazebo reference="base_link">
+    <mu1>0.2</mu1>
+    <mu2>0.2</mu2>
+    <material>Gazebo/Yellow</material>
+  </gazebo>
+
+  <gazebo reference="first_link">
+    <mu1>0.2</mu1>
+    <mu2>0.2</mu2>
+    <material>Gazebo/Yellow</material>
+  </gazebo>
+  
+
+  <gazebo reference="second_link">
+    <mu1>0.2</mu1>
+    <mu2>0.2</mu2>
+    <material>Gazebo/Yellow</material>
+  </gazebo>
+  
+  <gazebo reference="third_link">
+    <mu1>0.2</mu1>
+    <mu2>0.2</mu2>
+    <gravity>false</gravity>
+    <material>Gazebo/Blue</material>
+  </gazebo>
+
+
+  <gazebo reference="cover1_left">
+    <mu1>0.2</mu1>
+    <mu2>0.2</mu2>
+    <material>Gazebo/Black</material>
+  </gazebo>
+  
+  <gazebo reference="cover1_right">
+    <mu1>0.2</mu1>
+    <mu2>0.2</mu2>
+    <material>Gazebo/Black</material>
+  </gazebo>
+  
+  <gazebo reference="cover2_left">
+    <mu1>0.2</mu1>
+    <mu2>0.2</mu2>
+    <material>Gazebo/Black</material>
+  </gazebo>
+  
+  <gazebo reference="cover2_right">
+    <mu1>0.2</mu1>
+    <mu2>0.2</mu2>
+    <material>Gazebo/Black</material>
+  </gazebo>
+
+
+ <!-- connect to Gazebo -->
+
+  <gazebo>
+    <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
+       <robotNamespace>/scara</robotNamespace>
+    </plugin>
+  </gazebo> 
 
 
 </robot>

@@ -1,0 +1,20 @@
+<launch>
+  <!-- joint controller configuration -->
+  <rosparam file="$(find scara_robot)/config/scara_control.yaml" 
+command="load" />
+
+  <!-- load controllers -->
+  <node name="controller_spawner" pkg="controller_manager" 
+        type="spawner" respawn="false" output="screen" ns="/scara" 
+	args="base_to_first_joint_position_controller 
+	      first_to_second_joint_position_controller 
+        second_to_third_joint_joint_position_controller
+	      joint_state_controller"/>
+
+  <!-- convert to TF transforms -->
+  <node name="robot_state_publisher" pkg="robot_state_publisher" 
+        type="robot_state_publisher" respawn="false" output="screen">
+    <remap from="/joint_states" to="/scara/joint_states" />
+  </node>
+
+</launch>
