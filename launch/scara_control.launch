@@ -8,7 +8,7 @@ command="load" />
         type="spawner" respawn="false" output="screen" ns="/scara" 
 	args="base_to_first_joint_position_controller 
 	      first_to_second_joint_position_controller 
-        second_to_third_joint_joint_position_controller
+          second_to_third_joint_position_controller
 	      joint_state_controller"/>
 
   <!-- convert to TF transforms -->
