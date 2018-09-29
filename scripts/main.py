@@ -46,7 +46,6 @@ def create_points_xy(k = 100):
         rospy.loginfo('i: %i, x: %f, y: %f', i, x, y)
         points.append([x,y])
 
-
     # generate secon half of points
     for i in range(0,2*k):
         x = x + step
@@ -62,7 +61,6 @@ def create_points_xy(k = 100):
 def points_to_angles(points):
     angles = []
 
-
     for point in points:
         d = sqrt(point[0]**2 + point[1]**2)
         l = 0.9
@@ -71,12 +69,43 @@ def points_to_angles(points):
         q1 = - phi1 + phi2
         q2 = acos((d**2 - 2 * l**2)/(2 * l **2))
 
-        rospy.loginfo('new angles: %s and d: %f, phi1: %f, phi2: %f', [point[0], point[1], q1, q2], d, phi1, phi2)
-        angles.append([point[0], point[1], q1,q2])
+        angles.append([q1,q2])
 
     angles.reverse()
-
     return angles
+
+
+
+def move_to(q1_angle,q2_angle,q3_angle = -0.2):
+    global q1, q2, q3, pub_q1, pub_q2, pub_q3
+    err = 0.01
+
+    while (q1.get("set_point") != q1_angle) or (q2.get("set_point") != q2_angle) or (q3.get("set_point") != q3_angle):
+        pub_q1.publish(q1_angle)
+        pub_q2.publish(q2_angle)
+        pub_q3.publish(q3_angle)
+        rospy.sleep(0.01)
+
+    q1_err = abs(q1.get("error")) - err
+    q2_err = abs(q2.get("error")) - err
+    q3_err = abs(q3.get("error")) - err
+
+
+    while (q1_err > 0) or (q2_err > 0) or (q3_err > 0):
+        rospy.sleep(0.01)
+        q1_err = abs(q1.get("error")) - err
+        q2_err = abs(q2.get("error")) - err
+        q3_err = abs(q3.get("error")) - err
+
+
+
+def move_XY_circle(precision_factor = 100):
+    points_xy = create_points_xy(k=precision_factor)
+    angles_xy = points_to_angles(points_xy)
+    for angle in angles_xy:
+        move_to(angle[0],angle[1])
+
+
 
 
 
@@ -92,94 +121,16 @@ if __name__ == '__main__':
     pub_q2 = rospy.Publisher('/scara/first_to_second_joint_position_controller/command', Float64, queue_size=10)
     pub_q3 = rospy.Publisher('/scara/second_to_third_joint_position_controller/command', Float64, queue_size=10)
 
-    rate = rospy.Rate(10)
+    rate = rospy.Rate(100)
+
     # reset poses
-    f = 0.0
-    while q1.get("set_point") != f:
-        print("q1. %s", q1.get("set_point"))
-        # rospy.loginfo("Publish: %i", f)
-        pub_q1.publish(f)
-        rospy.sleep(1)
+    move_to(0.0,0.0,-0.2)
 
-    f = 0.0
-    while q2.get("set_point") != f:
-        print("q2. %s", q2.get("set_point"))
-        # rospy.loginfo("Publish: %i", f)
-        pub_q2.publish(f)
-        rospy.sleep(1)
-
-    f = -0.2
-    while q3.get("set_point") != f:
-        print("q3. %s", q3.get("set_point"))
-        # rospy.loginfo("Publish: %i", f)
-        pub_q3.publish(f)
-        rospy.sleep(1)
-
-    q1_err = abs(q1.get("error")) - 0.01
-    q2_err = abs(q2.get("error")) - 0.01
-    # rospy.loginfo('cur_angle %s and initial errors: %s', angle, [q1_err, q2_err])
-
-    while (q1_err > 0) or (q2_err > 0):
-        rospy.sleep(0.01)
-        q1_err = abs(q1.get("error")) - 0.01
-        q2_err = abs(q2.get("error")) - 0.01
-
-
-    # exit(0)
-    # close subscribing q3
-    sub_q3.unregister()
-
-    points_xy = create_points_xy(k=1000)
-    rospy.loginfo('points in main: %s', points_xy)
-    angles_xy = points_to_angles(points_xy)
-    rospy.loginfo('angles XY: %s', angles_xy)
-
-
-    for angle in angles_xy:
-        rospy.loginfo('cur_angle %s', angle)
-        f = angle[2]
-        while (q1.get("set_point") != angle[2]) or (q2.get("set_point") != angle[3]):
-            print("q1. %s", q1.get("set_point"))
-            # rospy.loginfo("Publish: %i", f)
-            print("q2. %s", q2.get("set_point"))
-            # rospy.loginfo("Publish: %i", f)
-            pub_q1.publish(angle[2])
-            pub_q2.publish(angle[3])
-            rospy.sleep(0.01)
-
-        # sum_err = q1.get("error") + q2.get("error") + q2.get("error") - 0.001
-        # # rospy.loginfo("Sum of errors: %f", sum_err)
-        q1_err = abs(q1.get("error")) - 0.01
-        q2_err = abs(q2.get("error")) - 0.01
-        rospy.loginfo('cur_angle %s and initial errors: %s', angle, [q1_err,q2_err])
-
-        while (q1_err > 0) or (q2_err > 0):
-            rospy.sleep(0.01)
-            q1_err = abs(q1.get("error")) - 0.01
-            q2_err = abs(q2.get("error")) - 0.01
-            # sum_err = q1.get("error") + q2.get("error") + q2.get("error") - 0.001
-            # # rospy.loginfo("0. Sum of errors: %s", sum_err)
-
-        rospy.loginfo('ended errors: %s', [q1_err, q2_err])
-        # if(angle[0] == 1.3) and (angle[1] == -0.5):
-        #     exit(0)
-
-    # rospy.sleep(10)
-    #
-    # f = angles_xy[1][2]
-    # while q1.get("set_point") != f:
-    #     print("q1. %s", q1.get("set_point"))
-    #     # rospy.loginfo("Publish: %i", f)
-    #     pub_q1.publish(f)
-    #     rospy.sleep(1)
-    #
-    # f = angles_xy[1][3]
-    # while q2.get("set_point") != f:
-    #     print("q2. %s", q2.get("set_point"))
-    #     # rospy.loginfo("Publish: %i", f)
-    #     pub_q2.publish(f)
-    #     rospy.sleep(1)
+    move_XY_circle()
 
 
 
 
+
+
+# TO DO added comments for XY moving
