@@ -28,9 +28,9 @@
     </collision>
     
     <inertial>
-      <mass value="1"/>
+      <mass value="0.1"/>
       <origin rpy="0 0 0" xyz="0 0 0.25"/>
-      <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0"/>
+      <inertia ixx="0.0" ixy="0.0" ixz="0.0" iyy="0.0" iyz="0.0" izz="0.0"/>
     </inertial>
   </link>
 
@@ -54,9 +54,9 @@
     </collision>
     
     <inertial>
-      <mass value="1"/>
+      <mass value="0.1"/>
       <origin rpy="0 0 0" xyz="0.45 0 0.05"/>
-      <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0"/>
+      <inertia ixx="0.0" ixy="0.0" ixz="0.0" iyy="0.0" iyz="0.0" izz="0.0"/>
     </inertial>
   </link>
 
@@ -83,9 +83,9 @@
     </collision>
     
     <inertial>
-      <mass value="1"/>
+      <mass value="0.1"/>
       <origin rpy="0 0 0" xyz="0.45 0 0.05"/>
-      <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0"/>
+      <inertia ixx="0.0" ixy="0.0" ixz="0.0" iyy="0.0" iyz="0.0" izz="0.0"/>
     </inertial>
   </link>
 
@@ -110,18 +110,18 @@
     </collision>
     
     <inertial>
-      <mass value="1"/>
-      <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0"/>
+      <mass value="0.1"/>
+      <inertia ixx="0.01" ixy="0.0" ixz="0.0" iyy="0.01" iyz="0.0" izz="0.01"/>
     </inertial>
   </link>
 
 
 
-  <!-- set links -->e
+  <!-- set links -->
 
   <joint name="base_to_first_joint" type="revolute"> 
     <axis xyz="0 0 1"/>
-    <limit effort="1000.0" lower="-2.6" upper="2.6" velocity="0.5"/>
+    <limit effort="1000.0" lower="-2.6" supper="2.6" velocity="0.1"/>
     <parent link="base_link"/>
       <child link="first_link"/>
     <origin rpy="0 0 0" xyz="0 0 0.5"/>
@@ -131,7 +131,7 @@
 
   <joint name="first_to_second_joint" type="revolute"> 
     <axis xyz="0 0 1"/>
-    <limit effort="1000.0" lower="-2.6" upper="2.6" velocity="0.5"/>
+    <limit effort="1000.0" lower="-2.6" upper="2.6" velocity="0.1"/>
     <parent link="first_link"/>
       <child link="second_link"/>
     <origin rpy="0 0 0" xyz="0.9 0 0.1"/>
@@ -141,7 +141,7 @@
 
   <joint name="second_to_third_joint" type="prismatic"> 
     <axis xyz="0 0 1"/>
-    <limit effort="1000.0" lower="-0.30" upper="0.30" velocity="0.5"/>
+    <limit effort="1000.0" lower="-0.30" upper="0.30" velocity="0.1"/>
     <parent link="second_link"/>
       <child link="third_link"/>
     <origin rpy="0 0 0" xyz="0.9 0 0"/>
