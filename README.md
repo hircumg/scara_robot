@@ -8,9 +8,4 @@ And to run circles we should run ```rosrun scara_robot main.py```
 which executes 2 circles: firstly in YZ plane and nextly in XY plane.
 
 
-The URDF tree is located in ```scara_robot/urdf/SCARA.pdf```
-
-<object data="urdf/SCARA.pdf" type="application/pdf" width="700px" height="700px">
-    <embed src="urdf/SCARA.pdf">
-    </embed>
-</object>
+The URDF tree is located in ```scara_robot/urdf/SCARA.pdf```.
