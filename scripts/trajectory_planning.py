@@ -218,15 +218,92 @@ def ptp(p_0, p_f, j=0):
     return joint_values
 
 
-def lin():
-    pass
+def lin(p_0, p_f, j=0):
+    global v_max, f, a_max
+    T = 1 / f
+    print(p_0, p_f)
+    times = []
+    times.append({'b': (v_max / a_max), 'p': (abs(p_f[0] - p_0[0]) / v_max - (v_max / a_max)),
+                  'b_triangle': (sqrt(abs(p_f[0] - p_0[0]) / a_max))})
+    times.append({'b': (v_max / a_max), 'p': (abs(p_f[1] - p_0[1]) / v_max - (v_max / a_max)),
+                  'b_triangle': (sqrt(abs(p_f[1] - p_0[1]) / a_max))})
+    times.append({'b': (v_max / a_max), 'p': (abs(p_f[2] - p_0[2]) / v_max - (v_max / a_max)),
+                  'b_triangle': (sqrt(abs(p_f[2] - p_0[2]) / a_max))})
+    print(times)
+
+    max_plato = 0
+    for time in times:
+        if time['p'] > max_plato:
+            max_plato = time['p']
+
+    max_t_b = 0
+    for time in times:
+        t_b = time['b'] if time['b'] < time['b_triangle'] else time['b_triangle']
+        if t_b > max_t_b:
+            max_t_b = t_b
+
+    # provide changing params according to controller command interpretation frequency
+    max_plato = (max_plato // T + (round(max_plato % T, 2) != 0)) * T
+    max_t_b = (max_t_b // T + (round(max_t_b % T, 2) != 0)) * T
+    print("t_b: %.2f, t_plato: %.2f" % (max_t_b, max_plato))
+
+    joints_params = []
+    joints_params.append({'e': ((p_f[0] - p_0[0]) / ((max_plato + max_t_b) * max_t_b)),
+                          'w': ((p_f[0] - p_0[0]) / (max_plato + max_t_b))})
+    joints_params.append({'e': ((p_f[1] - p_0[1]) / ((max_plato + max_t_b) * max_t_b)),
+                          'w': ((p_f[1] - p_0[1]) / (max_plato + max_t_b))})
+    joints_params.append({'e': ((p_f[2] - p_0[2]) / ((max_plato + max_t_b) * max_t_b)),
+                          'w': ((p_f[2] - p_0[2]) / (max_plato + max_t_b))})
+    print(joints_params)
+
+    cartesian_values = {'q0': [], 'q1': [], 'q2': []}
+    prev_ang_vel = [0, 0, 0]
+    prev_ang_pos = p_0
+
+    for i in range(int(max_t_b / T)):
+        prev_ang_pos[0] = prev_ang_pos[0] + prev_ang_vel[0] * T
+        prev_ang_pos[1] = prev_ang_pos[1] + prev_ang_vel[1] * T
+        prev_ang_pos[2] = prev_ang_pos[2] + prev_ang_vel[2] * T
+        prev_ang_vel[0] = prev_ang_vel[0] + joints_params[0]['e'] * T
+        prev_ang_vel[1] = prev_ang_vel[1] + joints_params[1]['e'] * T
+        prev_ang_vel[2] = prev_ang_vel[2] + joints_params[2]['e'] * T
+
+        cartesian_values['q0'].append([i * T, joints_params[0]['e'], prev_ang_vel[0], prev_ang_pos[0]])
+        cartesian_values['q1'].append([i * T, joints_params[1]['e'], prev_ang_vel[1], prev_ang_pos[1]])
+        cartesian_values['q2'].append([i * T, joints_params[2]['e'], prev_ang_vel[2], prev_ang_pos[2]])
+
+    for i in range(int(max_plato / T)):
+        prev_ang_pos[0] = prev_ang_pos[0] + joints_params[0]['w'] * T
+        prev_ang_pos[1] = prev_ang_pos[1] + joints_params[1]['w'] * T
+        prev_ang_pos[2] = prev_ang_pos[2] + joints_params[2]['w'] * T
+        cartesian_values['q0'].append([(max_t_b + i * T), 0, prev_ang_vel[0], prev_ang_pos[0]])
+        cartesian_values['q1'].append([(max_t_b + i * T), 0, prev_ang_vel[1], prev_ang_pos[1]])
+        cartesian_values['q2'].append([(max_t_b + i * T), 0, prev_ang_vel[2], prev_ang_pos[2]])
+
+    for i in range(int(max_t_b / T)):
+        prev_ang_pos[0] = prev_ang_pos[0] + prev_ang_vel[0] * T
+        prev_ang_pos[1] = prev_ang_pos[1] + prev_ang_vel[1] * T
+        prev_ang_pos[2] = prev_ang_pos[2] + prev_ang_vel[2] * T
+        prev_ang_vel[0] = prev_ang_vel[0] - joints_params[0]['e'] * T
+        prev_ang_vel[1] = prev_ang_vel[1] - joints_params[1]['e'] * T
+        prev_ang_vel[2] = prev_ang_vel[2] - joints_params[2]['e'] * T
+        cartesian_values['q0'].append(
+            [max_plato + max_t_b + i * T, -joints_params[0]['e'], prev_ang_vel[0], prev_ang_pos[0]])
+        cartesian_values['q1'].append(
+            [max_plato + max_t_b + i * T, -joints_params[1]['e'], prev_ang_vel[1], prev_ang_pos[1]])
+        cartesian_values['q2'].append(
+            [max_plato + max_t_b + i * T, -joints_params[2]['e'], prev_ang_vel[2], prev_ang_pos[2]])
+
+    return cartesian_values
+
 
 
 def arc():
     pass
 
+
 def convert_to_cartesian(values):
-    p_x = []
+    p = []
     p_y = []
     p_z = []
     inital_values_q0 = [v[3] for v in values['q0']]
@@ -234,14 +311,12 @@ def convert_to_cartesian(values):
     inital_values_q2 = [v[3] for v in values['q2']]
     for i in range(len(inital_values_q0)):
         q = [inital_values_q0[i],inital_values_q1[i],inital_values_q2[i]]
-        p = fk(q)
-        p_x.append(p[0])
-        p_y.append(p[1])
-        p_z.append(p[2])
-        print("%i %s -> %s" %(i,q,p))
+        p_i = fk(q)
+        p.append(p_i)
 
-    plt.plot(p_x,p_y)
-    plt.show()
+    return p
+    # plt.plot(p_x,p_y)
+    # plt.show()
 
     # mpl.rcParams['legend.fontsize'] = 10
     #
@@ -251,6 +326,19 @@ def convert_to_cartesian(values):
     # ax.legend()
     #
     # plt.show()
+
+def draw_cartesian(p):
+    p_x = [v[0] for v in p]
+    p_y = [v[1] for v in p]
+    p_z = [v[2] for v in p]
+
+    mpl.rcParams['legend.fontsize'] = 10
+    fig = plt.figure()
+    ax = fig.gca(projection='3d')
+    ax.plot(p_x, p_y, p_z, label='path')
+    ax.legend()
+
+    plt.show()
 
 def draw(values):
     inital_values_q0 = values['q0'][:]
@@ -302,6 +390,15 @@ def draw(values):
     plt.ylabel('x')
     plt.show()
 
+    mpl.rcParams['legend.fontsize'] = 10
+
+    fig = plt.figure()
+    ax = fig.gca(projection='3d')
+    ax.plot(values[0][2], values[1][2], values[2][2], label='parametric curve')
+    ax.legend()
+
+    plt.show()
+
 if __name__ == '__main__':
     # print(fk([0, 0, 0]))
     # print(fk([2.0, -2.6, 0.1]))
@@ -309,9 +406,12 @@ if __name__ == '__main__':
     # print(ik(fk([0.7, 0.4, 0.1])))
     # jacobian([0.7, 0, 0.1])
     # joint_values = ptp([0.37, 0.31, 0.3], [1.1, 1.38, 0.4])
-    joint_values = ptp([1.8, 0, 0.3], [1.1, 1.38, 0.4])
+    # joint_values = ptp([1.8, 0, 0.3], [1.1, 1.38, 0.4])
+    joint_values = lin([1.8, 0, 0.3], [1.1, 1.38, 0.4])
     # draw(joint_values)
-    convert_to_cartesian(joint_values)
+    # convert_to_cartesian(joint_values)
+    joint_values = [[joint_values['q0'][i][3],joint_values['q1'][i][3],joint_values['q2'][i][3]] for i in range(len(joint_values['q0']))]
+    draw_cartesian(joint_values)
     # joint_values = ptp([1.8, 0, 0.3], [1.1, 1.38, 0.4])
     # draw(joint_values)
     # ptp([1.8, 0, 0.3], [1.1, 1.38, 0.4])
