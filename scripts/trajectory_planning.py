@@ -3,6 +3,8 @@ import numpy as np
 from math import atan, sqrt, sin, acos, cos, fabs
 from numpy import sign
 from matplotlib import pyplot as plt
+import matplotlib as mpl
+from mpl_toolkits.mplot3d import Axes3D
 
 # Controller command interpretation frequency – f = 100 Hz
 f = 100
@@ -167,17 +169,17 @@ def ptp(p_0, p_f, j=0):
     print("t_b: %.2f, t_plato: %.2f" % (max_t_b, max_plato))
 
     joints_params = []
-    joints_params.append({'e': (abs(q_f[0] - q_0[0]) / ((max_plato + max_t_b) * max_t_b)),
-                          'w': (abs(q_f[0] - q_0[0]) / (max_plato + max_t_b))})
-    joints_params.append({'e': (abs(q_f[1] - q_0[1]) / ((max_plato + max_t_b) * max_t_b)),
-                          'w': (abs(q_f[1] - q_0[1]) / (max_plato + max_t_b))})
-    joints_params.append({'e': (abs(q_f[2] - q_0[2]) / ((max_plato + max_t_b) * max_t_b)),
-                          'w': (abs(q_f[2] - q_0[2]) / (max_plato + max_t_b))})
+    joints_params.append({'e': ((q_f[0] - q_0[0]) / ((max_plato + max_t_b) * max_t_b)),
+                          'w': ((q_f[0] - q_0[0]) / (max_plato + max_t_b))})
+    joints_params.append({'e': ((q_f[1] - q_0[1]) / ((max_plato + max_t_b) * max_t_b)),
+                          'w': ((q_f[1] - q_0[1]) / (max_plato + max_t_b))})
+    joints_params.append({'e': ((q_f[2] - q_0[2]) / ((max_plato + max_t_b) * max_t_b)),
+                          'w': ((q_f[2] - q_0[2]) / (max_plato + max_t_b))})
     print(joints_params)
 
     joint_values = {'q0': [], 'q1': [], 'q2': []}
     prev_ang_vel = [0, 0, 0]
-    prev_ang_pos = [0, 0, 0]
+    prev_ang_pos = q_0
 
     for i in range(int(max_t_b / T)):
         prev_ang_pos[0] = prev_ang_pos[0] + prev_ang_vel[0] * T
@@ -222,6 +224,33 @@ def lin():
 
 def arc():
     pass
+
+def convert_to_cartesian(values):
+    p_x = []
+    p_y = []
+    p_z = []
+    inital_values_q0 = [v[3] for v in values['q0']]
+    inital_values_q1 = [v[3] for v in values['q1']]
+    inital_values_q2 = [v[3] for v in values['q2']]
+    for i in range(len(inital_values_q0)):
+        q = [inital_values_q0[i],inital_values_q1[i],inital_values_q2[i]]
+        p = fk(q)
+        p_x.append(p[0])
+        p_y.append(p[1])
+        p_z.append(p[2])
+        print("%i %s -> %s" %(i,q,p))
+
+    plt.plot(p_x,p_y)
+    plt.show()
+
+    # mpl.rcParams['legend.fontsize'] = 10
+    #
+    # fig = plt.figure()
+    # ax = fig.gca(projection='3d')
+    # ax.plot(p_x, p_y, p_z, label='parametric curve')
+    # ax.legend()
+    #
+    # plt.show()
 
 def draw(values):
     inital_values_q0 = values['q0'][:]
@@ -279,8 +308,10 @@ if __name__ == '__main__':
     # print(ik(fk([0.7, 0, 0.1])))
     # print(ik(fk([0.7, 0.4, 0.1])))
     # jacobian([0.7, 0, 0.1])
-    joint_values = ptp([0.37, 0.31, 0.3], [1.1, 1.38, 0.4])
-    draw(joint_values)
+    # joint_values = ptp([0.37, 0.31, 0.3], [1.1, 1.38, 0.4])
     joint_values = ptp([1.8, 0, 0.3], [1.1, 1.38, 0.4])
-    draw(joint_values)
+    # draw(joint_values)
+    convert_to_cartesian(joint_values)
+    # joint_values = ptp([1.8, 0, 0.3], [1.1, 1.38, 0.4])
+    # draw(joint_values)
     # ptp([1.8, 0, 0.3], [1.1, 1.38, 0.4])
