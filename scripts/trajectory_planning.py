@@ -180,36 +180,44 @@ def ptp(p_0, p_f, j=0):
     joint_values = []
     prev_ang_vel = [0, 0, 0]
     prev_ang_pos = q_0
-    joint_values.append(prev_ang_vel.copy())
+    joint_values.append(prev_ang_pos.copy())
 
     for i in range(int(max_t_b / T)):
+        prev_ang_pos[0] = prev_ang_pos[0] + prev_ang_vel[0] * T
+        prev_ang_pos[1] = prev_ang_pos[1] + prev_ang_vel[1] * T
+        prev_ang_pos[2] = prev_ang_pos[2] + prev_ang_vel[2] * T
         prev_ang_vel[0] = prev_ang_vel[0] + joints_params[0]['e'] * T
         prev_ang_vel[1] = prev_ang_vel[1] + joints_params[1]['e'] * T
         prev_ang_vel[2] = prev_ang_vel[2] + joints_params[2]['e'] * T
-        joint_values.append(prev_ang_vel.copy())
+        joint_values.append(prev_ang_pos.copy())
 
     print("Increasing: ", len(joint_values))
 
     for i in range(int(max_plato / T)):
-        joint_values.append(prev_ang_vel.copy())
-
+        prev_ang_pos[0] = prev_ang_pos[0] + joints_params[0]['w'] * T
+        prev_ang_pos[1] = prev_ang_pos[1] + joints_params[1]['w'] * T
+        prev_ang_pos[2] = prev_ang_pos[2] + joints_params[2]['w'] * T
+        joint_values.append(prev_ang_pos.copy())
 
     print("Plato: ", len(joint_values))
 
     for i in range(int(max_t_b / T)):
+        prev_ang_pos[0] = prev_ang_pos[0] + prev_ang_vel[0] * T
+        prev_ang_pos[1] = prev_ang_pos[1] + prev_ang_vel[1] * T
+        prev_ang_pos[2] = prev_ang_pos[2] + prev_ang_vel[2] * T
         prev_ang_vel[0] = prev_ang_vel[0] - joints_params[0]['e'] * T
         prev_ang_vel[1] = prev_ang_vel[1] - joints_params[1]['e'] * T
         prev_ang_vel[2] = prev_ang_vel[2] - joints_params[2]['e'] * T
-        joint_values.append(prev_ang_vel.copy())
-
+        joint_values.append(prev_ang_pos.copy())
 
     print("Decreasing: ", len(joint_values))
 
     return joint_values
 
+
 def integrate(values):
     integrate_values = []
-    prev_values = [0,0,0]
+    prev_values = [0, 0, 0]
     for value in values:
         prev_values[0] = prev_values[0] + value[0]
         prev_values[1] = prev_values[1] + value[1]
@@ -217,9 +225,10 @@ def integrate(values):
         integrate_values.append(prev_values.copy())
     return integrate_values
 
+
 def diffirentiate(values):
     diff_values = []
-    prev_values = [0,0,0]
+    prev_values = [0, 0, 0]
     d = [0, 0, 0]
     for value in values:
         d[0] = value[0] - prev_values[0]
@@ -309,9 +318,9 @@ def diffirentiate(values):
 #     return cartesian_values
 
 
-
 def arc():
     pass
+
 
 #
 # def convert_to_cartesian(values):
@@ -358,11 +367,11 @@ def draw(values):
     q_0 = [v[0] for v in values]
     q_1 = [v[1] for v in values]
     q_2 = [v[2] for v in values]
-    time = [i*T for i in range(len(values))]
+    time = [i * T for i in range(len(values))]
 
-    plt.plot( time, q_0, 'r')
-    plt.plot( time, q_1, 'b')
-    plt.plot( time, q_2, 'g')
+    plt.plot(time, q_0, 'r')
+    plt.plot(time, q_1, 'b')
+    plt.plot(time, q_2, 'g')
     plt.legend(['q0', 'q1', 'q2'], loc='upper left')
     plt.title('Joint velocity. Joint space.')
     plt.xlabel('t')
@@ -376,7 +385,7 @@ def draw3d(values):
     q_0 = [v[0] for v in values]
     q_1 = [v[1] for v in values]
     q_2 = [v[2] for v in values]
-    time = [i*T for i in range(len(values))]
+    time = [i * T for i in range(len(values))]
 
     mpl.rcParams['legend.fontsize'] = 10
 
@@ -386,6 +395,7 @@ def draw3d(values):
     ax.legend()
 
     plt.show()
+
 
 if __name__ == '__main__':
     # print(fk([0, 0, 0]))
