@@ -177,224 +177,212 @@ def ptp(p_0, p_f, j=0):
                           'w': ((q_f[2] - q_0[2]) / (max_plato + max_t_b))})
     print(joints_params)
 
-    joint_values = {'q0': [], 'q1': [], 'q2': []}
+    joint_values = []
     prev_ang_vel = [0, 0, 0]
     prev_ang_pos = q_0
+    joint_values.append(prev_ang_vel.copy())
 
     for i in range(int(max_t_b / T)):
-        prev_ang_pos[0] = prev_ang_pos[0] + prev_ang_vel[0] * T
-        prev_ang_pos[1] = prev_ang_pos[1] + prev_ang_vel[1] * T
-        prev_ang_pos[2] = prev_ang_pos[2] + prev_ang_vel[2] * T
         prev_ang_vel[0] = prev_ang_vel[0] + joints_params[0]['e'] * T
         prev_ang_vel[1] = prev_ang_vel[1] + joints_params[1]['e'] * T
         prev_ang_vel[2] = prev_ang_vel[2] + joints_params[2]['e'] * T
+        joint_values.append(prev_ang_vel.copy())
 
-        joint_values['q0'].append([i * T, joints_params[0]['e'], prev_ang_vel[0], prev_ang_pos[0]])
-        joint_values['q1'].append([i * T, joints_params[1]['e'], prev_ang_vel[1], prev_ang_pos[1]])
-        joint_values['q2'].append([i * T, joints_params[2]['e'], prev_ang_vel[2], prev_ang_pos[2]])
+    print("Increasing: ", len(joint_values))
 
     for i in range(int(max_plato / T)):
-        prev_ang_pos[0] = prev_ang_pos[0] + joints_params[0]['w'] * T
-        prev_ang_pos[1] = prev_ang_pos[1] + joints_params[1]['w'] * T
-        prev_ang_pos[2] = prev_ang_pos[2] + joints_params[2]['w'] * T
-        joint_values['q0'].append([(max_t_b + i * T), 0, prev_ang_vel[0], prev_ang_pos[0]])
-        joint_values['q1'].append([(max_t_b + i * T), 0, prev_ang_vel[1], prev_ang_pos[1]])
-        joint_values['q2'].append([(max_t_b + i * T), 0, prev_ang_vel[2], prev_ang_pos[2]])
+        joint_values.append(prev_ang_vel.copy())
+
+
+    print("Plato: ", len(joint_values))
 
     for i in range(int(max_t_b / T)):
-        prev_ang_pos[0] = prev_ang_pos[0] + prev_ang_vel[0] * T
-        prev_ang_pos[1] = prev_ang_pos[1] + prev_ang_vel[1] * T
-        prev_ang_pos[2] = prev_ang_pos[2] + prev_ang_vel[2] * T
         prev_ang_vel[0] = prev_ang_vel[0] - joints_params[0]['e'] * T
         prev_ang_vel[1] = prev_ang_vel[1] - joints_params[1]['e'] * T
         prev_ang_vel[2] = prev_ang_vel[2] - joints_params[2]['e'] * T
-        joint_values['q0'].append(
-            [max_plato + max_t_b + i * T, -joints_params[0]['e'], prev_ang_vel[0], prev_ang_pos[0]])
-        joint_values['q1'].append(
-            [max_plato + max_t_b + i * T, -joints_params[1]['e'], prev_ang_vel[1], prev_ang_pos[1]])
-        joint_values['q2'].append(
-            [max_plato + max_t_b + i * T, -joints_params[2]['e'], prev_ang_vel[2], prev_ang_pos[2]])
+        joint_values.append(prev_ang_vel.copy())
+
+
+    print("Decreasing: ", len(joint_values))
 
     return joint_values
 
+def integrate(values):
+    integrate_values = []
+    prev_values = [0,0,0]
+    for value in values:
+        prev_values[0] = prev_values[0] + value[0]
+        prev_values[1] = prev_values[1] + value[1]
+        prev_values[2] = prev_values[2] + value[2]
+        integrate_values.append(prev_values.copy())
+    return integrate_values
 
-def lin(p_0, p_f, j=0):
-    global v_max, f, a_max
-    T = 1 / f
-    print(p_0, p_f)
-    times = []
-    times.append({'b': (v_max / a_max), 'p': (abs(p_f[0] - p_0[0]) / v_max - (v_max / a_max)),
-                  'b_triangle': (sqrt(abs(p_f[0] - p_0[0]) / a_max))})
-    times.append({'b': (v_max / a_max), 'p': (abs(p_f[1] - p_0[1]) / v_max - (v_max / a_max)),
-                  'b_triangle': (sqrt(abs(p_f[1] - p_0[1]) / a_max))})
-    times.append({'b': (v_max / a_max), 'p': (abs(p_f[2] - p_0[2]) / v_max - (v_max / a_max)),
-                  'b_triangle': (sqrt(abs(p_f[2] - p_0[2]) / a_max))})
-    print(times)
+def diffirentiate(values):
+    diff_values = []
+    prev_values = [0,0,0]
+    d = [0, 0, 0]
+    for value in values:
+        d[0] = value[0] - prev_values[0]
+        d[1] = value[1] - prev_values[1]
+        d[2] = value[2] - prev_values[2]
+        diff_values.append(d.copy())
+        prev_values = value.copy()
+    return diff_values
 
-    max_plato = 0
-    for time in times:
-        if time['p'] > max_plato:
-            max_plato = time['p']
 
-    max_t_b = 0
-    for time in times:
-        t_b = time['b'] if time['b'] < time['b_triangle'] else time['b_triangle']
-        if t_b > max_t_b:
-            max_t_b = t_b
-
-    # provide changing params according to controller command interpretation frequency
-    max_plato = (max_plato // T + (round(max_plato % T, 2) != 0)) * T
-    max_t_b = (max_t_b // T + (round(max_t_b % T, 2) != 0)) * T
-    print("t_b: %.2f, t_plato: %.2f" % (max_t_b, max_plato))
-
-    joints_params = []
-    joints_params.append({'e': ((p_f[0] - p_0[0]) / ((max_plato + max_t_b) * max_t_b)),
-                          'w': ((p_f[0] - p_0[0]) / (max_plato + max_t_b))})
-    joints_params.append({'e': ((p_f[1] - p_0[1]) / ((max_plato + max_t_b) * max_t_b)),
-                          'w': ((p_f[1] - p_0[1]) / (max_plato + max_t_b))})
-    joints_params.append({'e': ((p_f[2] - p_0[2]) / ((max_plato + max_t_b) * max_t_b)),
-                          'w': ((p_f[2] - p_0[2]) / (max_plato + max_t_b))})
-    print(joints_params)
-
-    cartesian_values = {'q0': [], 'q1': [], 'q2': []}
-    prev_ang_vel = [0, 0, 0]
-    prev_ang_pos = p_0
-
-    for i in range(int(max_t_b / T)):
-        prev_ang_pos[0] = prev_ang_pos[0] + prev_ang_vel[0] * T
-        prev_ang_pos[1] = prev_ang_pos[1] + prev_ang_vel[1] * T
-        prev_ang_pos[2] = prev_ang_pos[2] + prev_ang_vel[2] * T
-        prev_ang_vel[0] = prev_ang_vel[0] + joints_params[0]['e'] * T
-        prev_ang_vel[1] = prev_ang_vel[1] + joints_params[1]['e'] * T
-        prev_ang_vel[2] = prev_ang_vel[2] + joints_params[2]['e'] * T
-
-        cartesian_values['q0'].append([i * T, joints_params[0]['e'], prev_ang_vel[0], prev_ang_pos[0]])
-        cartesian_values['q1'].append([i * T, joints_params[1]['e'], prev_ang_vel[1], prev_ang_pos[1]])
-        cartesian_values['q2'].append([i * T, joints_params[2]['e'], prev_ang_vel[2], prev_ang_pos[2]])
-
-    for i in range(int(max_plato / T)):
-        prev_ang_pos[0] = prev_ang_pos[0] + joints_params[0]['w'] * T
-        prev_ang_pos[1] = prev_ang_pos[1] + joints_params[1]['w'] * T
-        prev_ang_pos[2] = prev_ang_pos[2] + joints_params[2]['w'] * T
-        cartesian_values['q0'].append([(max_t_b + i * T), 0, prev_ang_vel[0], prev_ang_pos[0]])
-        cartesian_values['q1'].append([(max_t_b + i * T), 0, prev_ang_vel[1], prev_ang_pos[1]])
-        cartesian_values['q2'].append([(max_t_b + i * T), 0, prev_ang_vel[2], prev_ang_pos[2]])
-
-    for i in range(int(max_t_b / T)):
-        prev_ang_pos[0] = prev_ang_pos[0] + prev_ang_vel[0] * T
-        prev_ang_pos[1] = prev_ang_pos[1] + prev_ang_vel[1] * T
-        prev_ang_pos[2] = prev_ang_pos[2] + prev_ang_vel[2] * T
-        prev_ang_vel[0] = prev_ang_vel[0] - joints_params[0]['e'] * T
-        prev_ang_vel[1] = prev_ang_vel[1] - joints_params[1]['e'] * T
-        prev_ang_vel[2] = prev_ang_vel[2] - joints_params[2]['e'] * T
-        cartesian_values['q0'].append(
-            [max_plato + max_t_b + i * T, -joints_params[0]['e'], prev_ang_vel[0], prev_ang_pos[0]])
-        cartesian_values['q1'].append(
-            [max_plato + max_t_b + i * T, -joints_params[1]['e'], prev_ang_vel[1], prev_ang_pos[1]])
-        cartesian_values['q2'].append(
-            [max_plato + max_t_b + i * T, -joints_params[2]['e'], prev_ang_vel[2], prev_ang_pos[2]])
-
-    return cartesian_values
+# def lin(p_0, p_f, j=0):
+#     global v_max, f, a_max
+#     T = 1 / f
+#     print(p_0, p_f)
+#     times = []
+#     times.append({'b': (v_max / a_max), 'p': (abs(p_f[0] - p_0[0]) / v_max - (v_max / a_max)),
+#                   'b_triangle': (sqrt(abs(p_f[0] - p_0[0]) / a_max))})
+#     times.append({'b': (v_max / a_max), 'p': (abs(p_f[1] - p_0[1]) / v_max - (v_max / a_max)),
+#                   'b_triangle': (sqrt(abs(p_f[1] - p_0[1]) / a_max))})
+#     times.append({'b': (v_max / a_max), 'p': (abs(p_f[2] - p_0[2]) / v_max - (v_max / a_max)),
+#                   'b_triangle': (sqrt(abs(p_f[2] - p_0[2]) / a_max))})
+#     print(times)
+#
+#     max_plato = 0
+#     for time in times:
+#         if time['p'] > max_plato:
+#             max_plato = time['p']
+#
+#     max_t_b = 0
+#     for time in times:
+#         t_b = time['b'] if time['b'] < time['b_triangle'] else time['b_triangle']
+#         if t_b > max_t_b:
+#             max_t_b = t_b
+#
+#     # provide changing params according to controller command interpretation frequency
+#     max_plato = (max_plato // T + (round(max_plato % T, 2) != 0)) * T
+#     max_t_b = (max_t_b // T + (round(max_t_b % T, 2) != 0)) * T
+#     print("t_b: %.2f, t_plato: %.2f" % (max_t_b, max_plato))
+#
+#     joints_params = []
+#     joints_params.append({'e': ((p_f[0] - p_0[0]) / ((max_plato + max_t_b) * max_t_b)),
+#                           'w': ((p_f[0] - p_0[0]) / (max_plato + max_t_b))})
+#     joints_params.append({'e': ((p_f[1] - p_0[1]) / ((max_plato + max_t_b) * max_t_b)),
+#                           'w': ((p_f[1] - p_0[1]) / (max_plato + max_t_b))})
+#     joints_params.append({'e': ((p_f[2] - p_0[2]) / ((max_plato + max_t_b) * max_t_b)),
+#                           'w': ((p_f[2] - p_0[2]) / (max_plato + max_t_b))})
+#     print(joints_params)
+#
+#     cartesian_values = {'q0': [], 'q1': [], 'q2': []}
+#     prev_ang_vel = [0, 0, 0]
+#     prev_ang_pos = p_0
+#
+#     for i in range(int(max_t_b / T)):
+#         prev_ang_pos[0] = prev_ang_pos[0] + prev_ang_vel[0] * T
+#         prev_ang_pos[1] = prev_ang_pos[1] + prev_ang_vel[1] * T
+#         prev_ang_pos[2] = prev_ang_pos[2] + prev_ang_vel[2] * T
+#         prev_ang_vel[0] = prev_ang_vel[0] + joints_params[0]['e'] * T
+#         prev_ang_vel[1] = prev_ang_vel[1] + joints_params[1]['e'] * T
+#         prev_ang_vel[2] = prev_ang_vel[2] + joints_params[2]['e'] * T
+#
+#         cartesian_values['q0'].append([i * T, joints_params[0]['e'], prev_ang_vel[0], prev_ang_pos[0]])
+#         cartesian_values['q1'].append([i * T, joints_params[1]['e'], prev_ang_vel[1], prev_ang_pos[1]])
+#         cartesian_values['q2'].append([i * T, joints_params[2]['e'], prev_ang_vel[2], prev_ang_pos[2]])
+#
+#     for i in range(int(max_plato / T)):
+#         prev_ang_pos[0] = prev_ang_pos[0] + joints_params[0]['w'] * T
+#         prev_ang_pos[1] = prev_ang_pos[1] + joints_params[1]['w'] * T
+#         prev_ang_pos[2] = prev_ang_pos[2] + joints_params[2]['w'] * T
+#         cartesian_values['q0'].append([(max_t_b + i * T), 0, prev_ang_vel[0], prev_ang_pos[0]])
+#         cartesian_values['q1'].append([(max_t_b + i * T), 0, prev_ang_vel[1], prev_ang_pos[1]])
+#         cartesian_values['q2'].append([(max_t_b + i * T), 0, prev_ang_vel[2], prev_ang_pos[2]])
+#
+#     for i in range(int(max_t_b / T)):
+#         prev_ang_pos[0] = prev_ang_pos[0] + prev_ang_vel[0] * T
+#         prev_ang_pos[1] = prev_ang_pos[1] + prev_ang_vel[1] * T
+#         prev_ang_pos[2] = prev_ang_pos[2] + prev_ang_vel[2] * T
+#         prev_ang_vel[0] = prev_ang_vel[0] - joints_params[0]['e'] * T
+#         prev_ang_vel[1] = prev_ang_vel[1] - joints_params[1]['e'] * T
+#         prev_ang_vel[2] = prev_ang_vel[2] - joints_params[2]['e'] * T
+#         cartesian_values['q0'].append(
+#             [max_plato + max_t_b + i * T, -joints_params[0]['e'], prev_ang_vel[0], prev_ang_pos[0]])
+#         cartesian_values['q1'].append(
+#             [max_plato + max_t_b + i * T, -joints_params[1]['e'], prev_ang_vel[1], prev_ang_pos[1]])
+#         cartesian_values['q2'].append(
+#             [max_plato + max_t_b + i * T, -joints_params[2]['e'], prev_ang_vel[2], prev_ang_pos[2]])
+#
+#     return cartesian_values
 
 
 
 def arc():
     pass
 
+#
+# def convert_to_cartesian(values):
+#     p = []
+#     p_y = []
+#     p_z = []
+#     inital_values_q0 = [v[3] for v in values['q0']]
+#     inital_values_q1 = [v[3] for v in values['q1']]
+#     inital_values_q2 = [v[3] for v in values['q2']]
+#     for i in range(len(inital_values_q0)):
+#         q = [inital_values_q0[i],inital_values_q1[i],inital_values_q2[i]]
+#         p_i = fk(q)
+#         p.append(p_i)
+#
+#     return p
+#     # plt.plot(p_x,p_y)
+#     # plt.show()
+#
+#     # mpl.rcParams['legend.fontsize'] = 10
+#     #
+#     # fig = plt.figure()
+#     # ax = fig.gca(projection='3d')
+#     # ax.plot(p_x, p_y, p_z, label='parametric curve')
+#     # ax.legend()
+#     #
+#     # plt.show()
 
-def convert_to_cartesian(values):
-    p = []
-    p_y = []
-    p_z = []
-    inital_values_q0 = [v[3] for v in values['q0']]
-    inital_values_q1 = [v[3] for v in values['q1']]
-    inital_values_q2 = [v[3] for v in values['q2']]
-    for i in range(len(inital_values_q0)):
-        q = [inital_values_q0[i],inital_values_q1[i],inital_values_q2[i]]
-        p_i = fk(q)
-        p.append(p_i)
-
-    return p
-    # plt.plot(p_x,p_y)
-    # plt.show()
-
-    # mpl.rcParams['legend.fontsize'] = 10
-    #
-    # fig = plt.figure()
-    # ax = fig.gca(projection='3d')
-    # ax.plot(p_x, p_y, p_z, label='parametric curve')
-    # ax.legend()
-    #
-    # plt.show()
-
-def draw_cartesian(p):
-    p_x = [v[0] for v in p]
-    p_y = [v[1] for v in p]
-    p_z = [v[2] for v in p]
-
-    mpl.rcParams['legend.fontsize'] = 10
-    fig = plt.figure()
-    ax = fig.gca(projection='3d')
-    ax.plot(p_x, p_y, p_z, label='path')
-    ax.legend()
-
-    plt.show()
+# def draw_cartesian(p):
+#     p_x = [v[0] for v in p]
+#     p_y = [v[1] for v in p]
+#     p_z = [v[2] for v in p]
+#
+#     mpl.rcParams['legend.fontsize'] = 10
+#     fig = plt.figure()
+#     ax = fig.gca(projection='3d')
+#     ax.plot(p_x, p_y, p_z, label='path')
+#     ax.legend()
+#
+#     plt.show()
 
 def draw(values):
-    inital_values_q0 = values['q0'][:]
-    inital_values_q1 = values['q1'][:]
-    inital_values_q2 = values['q2'][:]
-    values = [[[],[],[]],[[],[],[]],[[],[],[]]]
-    time = []
+    global f
+    T = 1 / f
+    q_0 = [v[0] for v in values]
+    q_1 = [v[1] for v in values]
+    q_2 = [v[2] for v in values]
+    time = [i*T for i in range(len(values))]
 
-    for value in inital_values_q0:
-        time.append(value[0])
-        values[0][0].append(value[1])
-        values[0][1].append(value[2])
-        values[0][2].append(value[3])
-
-    for value in inital_values_q1:
-        values[1][0].append(value[1])
-        values[1][1].append(value[2])
-        values[1][2].append(value[3])
-
-    for value in inital_values_q2:
-        values[2][0].append(value[1])
-        values[2][1].append(value[2])
-        values[2][2].append(value[3])
-
-    plt.plot( time, values[0][0], 'r')
-    plt.plot( time, values[1][0], 'b')
-    plt.plot( time, values[2][0], 'g')
-    plt.legend(['q0', 'q1', 'q2'], loc='upper left')
-    plt.title('Joint accelerations. Joint space.')
-    plt.xlabel('t')
-    plt.ylabel('a')
-    plt.show()
-
-    plt.plot( time, values[0][1], 'r')
-    plt.plot( time, values[1][1], 'b')
-    plt.plot( time, values[2][1], 'g')
+    plt.plot( time, q_0, 'r')
+    plt.plot( time, q_1, 'b')
+    plt.plot( time, q_2, 'g')
     plt.legend(['q0', 'q1', 'q2'], loc='upper left')
     plt.title('Joint velocity. Joint space.')
     plt.xlabel('t')
     plt.ylabel('v')
     plt.show()
 
-    plt.plot( time, values[0][2], 'r')
-    plt.plot( time, values[1][2], 'b')
-    plt.plot( time, values[2][2], 'g')
-    plt.legend(['q0', 'q1', 'q2'], loc='upper left')
-    plt.title('Joint position. Joint space.')
-    plt.xlabel('t')
-    plt.ylabel('x')
-    plt.show()
+
+def draw3d(values):
+    global f
+    T = 1 / f
+    q_0 = [v[0] for v in values]
+    q_1 = [v[1] for v in values]
+    q_2 = [v[2] for v in values]
+    time = [i*T for i in range(len(values))]
 
     mpl.rcParams['legend.fontsize'] = 10
 
     fig = plt.figure()
     ax = fig.gca(projection='3d')
-    ax.plot(values[0][2], values[1][2], values[2][2], label='parametric curve')
+    ax.plot(q_0, q_1, q_2, label='velosity')
     ax.legend()
 
     plt.show()
@@ -404,14 +392,20 @@ if __name__ == '__main__':
     # print(fk([2.0, -2.6, 0.1]))
     # print(ik(fk([0.7, 0, 0.1])))
     # print(ik(fk([0.7, 0.4, 0.1])))
-    # jacobian([0.7, 0, 0.1])
-    # joint_values = ptp([0.37, 0.31, 0.3], [1.1, 1.38, 0.4])
+    # print(jacobian([0.7, 0, 0.1]))
+    # exit(0)
+    joint_values = ptp([0.37, 0.31, 0.3], [1.1, 1.38, 0.4])
     # joint_values = ptp([1.8, 0, 0.3], [1.1, 1.38, 0.4])
-    joint_values = lin([1.8, 0, 0.3], [1.1, 1.38, 0.4])
-    # draw(joint_values)
+    # joint_values = lin([1.8, 0, 0.3], [1.1, 1.38, 0.4])
+    draw(joint_values)
+    # draw(integrate(joint_values))
+    # draw(diffirentiate(joint_values))
+    draw3d(joint_values)
+    # draw3d(integrate(joint_values))
+    # draw3d(diffirentiate(joint_values))
     # convert_to_cartesian(joint_values)
-    joint_values = [[joint_values['q0'][i][3],joint_values['q1'][i][3],joint_values['q2'][i][3]] for i in range(len(joint_values['q0']))]
-    draw_cartesian(joint_values)
+    # joint_values = [[joint_values['q0'][i][3],joint_values['q1'][i][3],joint_values['q2'][i][3]] for i in range(len(joint_values['q0']))]
+    # draw_cartesian(joint_values)
     # joint_values = ptp([1.8, 0, 0.3], [1.1, 1.38, 0.4])
     # draw(joint_values)
     # ptp([1.8, 0, 0.3], [1.1, 1.38, 0.4])
