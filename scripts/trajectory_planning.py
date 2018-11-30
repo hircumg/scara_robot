@@ -103,7 +103,7 @@ def ik(p):
     # q[1] = acos(val)
     q[1] = atan2(sqrt(1-val**2),val)
     q[2] = p[2] + links[3] - links[0]
-    print("d:", d, ", phi_1: ", phi1, ", phi_2: ", phi2, ", q_1:", q[0], ", q_2: ", q[1])
+    # print("d:", d, ", phi_1: ", phi1, ", phi_2: ", phi2, ", q_1:", q[0], ", q_2: ", q[1])
     # q = np.round(q, 6)
     # q = [round(i,2) for i in q]
     return q
@@ -253,9 +253,8 @@ def ptp(p_0, p_f, j=0):
     return joint_values
 
 
-def integrate(values):
+def integrate(values, prev_values=[0,0,0]):
     integrate_values = []
-    prev_values = [0, 0, 0]
     for value in values:
         prev_values[0] = prev_values[0] + value[0]
         prev_values[1] = prev_values[1] + value[1]
@@ -376,7 +375,7 @@ def lin(p_0, p_f, j=0):
 
     print("Decreasing: ", len(joint_values))
 
-    return joint_values, debug
+    return joint_values
     # return velosity_values
 
 
@@ -411,6 +410,35 @@ def draw(values):
     plt.ylabel('v')
     plt.show()
 
+def draw2(values, values2):
+    global f
+    T = 1 / f
+    q_0 = [v[0] for v in values]
+    q_1 = [v[1] for v in values]
+    q_2 = [v[2] for v in values]
+    time = [i * T for i in range(len(values))]
+
+    plt.plot(time, q_0, 'r')
+    # plt.plot(time, q_1, 'b')
+    # plt.plot(time, q_2, 'g')
+    # plt.legend(['q0', 'q1', 'q2'], loc='upper left')
+    plt.title('Joint velocity. Joint space.')
+    plt.xlabel('t')
+    plt.ylabel('v')
+    # plt.show()
+
+    q_0 = [v[0] for v in values2]
+    q_1 = [v[1] for v in values2]
+    q_2 = [v[2] for v in values2]
+    time = [i * T for i in range(len(values2))]
+    plt.plot(time, q_0, 'b')
+    # plt.plot(time, q_1, 'y')
+    # plt.plot(time, q_2, 'k')
+    # plt.legend(['q0', 'q1', 'q2'], loc='upper left')
+    # plt.title('Joint velocity. Joint space.')
+    # plt.xlabel('t')
+    # plt.ylabel('v')
+    plt.show()
 
 def draw3d(values):
     global f
@@ -429,6 +457,25 @@ def draw3d(values):
 
     plt.show()
 
+def join_with_junction(q_movements, junc = 0):
+    q_init = q_movements[0][0]
+    q_vel = []
+    q_vel_out = []
+    for mov in q_movements:
+        q_vel_i = diffirentiate(mov)
+        q_vel_len = len(q_vel)
+        for i in range(junc):
+            if (q_vel_len-junc + i)>=0:
+                q_vel[q_vel_len-junc + i] = q_vel_i[i]
+        q_vel += q_vel_i[junc:]
+        # q_vel += diffirentiate(mov)
+
+
+
+    # for q_vel_i in q_vel:
+    #     q_vel_out += q_vel_i
+    q_out = integrate(q_vel,q_init)
+    return q_out
 
 if __name__ == '__main__':
     q0 = [0,0.1,0]
@@ -451,14 +498,22 @@ if __name__ == '__main__':
     # print(fk(ik([0.7, 0.4, 0.1])))
     # print(jacobian([0.7, 0, 0.1])[0:3])
     # exit(0)
-    joint_values = ptp([0.37, 0.31, 0.3], [1.1, 1.38, 0.4])
-    # joint_values = ptp([1.8, 0, 0.3], [1.1, 1.38, 0.4])
-    # joint_values, debug = lin([1.8, 0, 0.3], [1.1, 1.38, 0.3])
-    # draw(joint_values)
 
+    joint_values = join_with_junction([ptp([0.37, 0.31, 0.3], [1.1, 1.38, 0.4]),
+                                        lin([1.1, 1.38, 0.4], [1.4, 0, 0.3]),
+                                        ptp([1.4, 0, 0.3], [0.5, -1.38, 0.1]),
+                                        ptp([0.5, -1.38, 0.1], [-1.1, -1.0, 0.3])],0)
+
+    # draw(joint_values)
+    # draw(diffirentiate(joint_values))
+    joint_values2 = join_with_junction([ptp([0.37, 0.31, 0.3], [1.1, 1.38, 0.4]),
+                                       lin([1.1, 1.38, 0.4], [1.4, 0, 0.3]),
+                                       ptp([1.4, 0, 0.3], [0.5, -1.38, 0.1]),
+                                       ptp([0.5, -1.38, 0.1], [-1.1, -1.0, 0.3])], 5)
+    # draw(joint_values)
     # draw(convert_to_cartesian(joint_values))
     # draw(integrate(joint_values))
-    draw(diffirentiate(joint_values))
+    draw2(diffirentiate(joint_values),diffirentiate(joint_values2))
     # draw(diffirentiate(convert_to_cartesian(joint_values)))
     # draw3d(joint_values)
     # draw3d(convert_to_cartesian(joint_values))
